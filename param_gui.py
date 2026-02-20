@@ -9,7 +9,7 @@ def edit_params(params):
     """
     root = tk.Tk()
     root.title("YMD Parameter Editor")
-    root.geometry("600x600")
+    root.geometry("800x800")
 
     # Style
     style = ttk.Style()
@@ -98,16 +98,14 @@ def edit_params(params):
             # But currently base_params.yaml has all dicts at top level except maybe if user changed it
             pass
 
-    # Buttons
+    # Buttons - Pack at BOTTOM first to ensure visibility
     button_frame = ttk.Frame(main_frame)
-    button_frame.pack(fill=tk.X, pady=10)
+    button_frame.pack(side=tk.BOTTOM, fill=tk.X, pady=10)
 
     result_params = [None] # Use list to start mutable result
 
     def on_run():
-        new_params = params.copy() # Shallow copy might not be enough for nested, but we are updating values in place
-        # Actually, for deep updates, we need to be careful.
-        # But here we are just updating the values at the paths.
+        new_params = params.copy()
         
         try:
             for path, entry in entries.items():
