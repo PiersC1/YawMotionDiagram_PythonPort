@@ -79,13 +79,13 @@ def extract_kpis(AyData, MData, SA_range, Delta_range):
                 if dm != 0:
                     ay_cross = Ay_line[i] - dy * M_line[i] / dm
                     if ay_cross > max_ay_mz0: max_ay_mz0 = ay_cross
-    kpis['Grip'] = max_ay_mz0
+    kpis['Grip Limit (Acceleration)'] = max_ay_mz0
 
     # 2. Limit Balance
     Ay_flat = AyData[:, :, 0]
     Mz_flat = MData[:, :, 0]
     idx_max_ay = np.unravel_index(np.argmax(Ay_flat), Ay_flat.shape)
-    kpis['Limit Balance'] = Mz_flat[idx_max_ay]
+    kpis['Limit Balance (Yaw Moment)'] = Mz_flat[idx_max_ay]
 
     # 3. Control (Slope of Mz vs Delta at Beta 0)
     idx_beta_0 = np.argmin(np.abs(SA_range))
@@ -93,7 +93,7 @@ def extract_kpis(AyData, MData, SA_range, Delta_range):
     Delta_deg = np.rad2deg(Delta_range)
     # Exclude extremities for slope -> use central points or simple linear fit
     poly_ctrl = np.polyfit(Delta_deg, Mz_beta_0, 1)
-    kpis['Control'] = poly_ctrl[0] # [lb-ft/deg]
+    kpis['Control'] = -poly_ctrl[0] # [lb-ft/deg]
 
     # 4. Stability (Slope of Mz vs Beta at Delta 0)
     idx_delta_0 = np.argmin(np.abs(Delta_range))
@@ -101,30 +101,6 @@ def extract_kpis(AyData, MData, SA_range, Delta_range):
     SA_deg = np.rad2deg(SA_range)
     poly_stab = np.polyfit(SA_deg, Mz_delta_0, 1)
     kpis['Stability'] = poly_stab[0] # [lb-ft/deg]
-
-    # 5. Average KPIs over the entire grid
-    kpis['Average Lateral Acceleration'] = np.mean(np.abs(AyData[:, :, 0]))
-    kpis['Average Absolute Yaw Moment'] = np.mean(np.abs(MData[:, :, 0]))
-    
-    # Average Absolute Yaw Moment for positive Lateral Acceleration
-    Ay_flat = AyData[:, :, 0].flatten()
-    Mz_flat = MData[:, :, 0].flatten()
-    ay_pos_mask = Ay_flat > 0
-    if np.any(ay_pos_mask):
-        kpis['Average Yaw Moment (Ay > 0)'] = (np.mean(Mz_flat[ay_pos_mask]))
-    else:
-        kpis['Average Yaw Moment (Ay > 0)'] = 0.0
-
-    # --- NEW ABS-FREE VARIATIONS ---
-    
-    # 1. Average Positive Yaw Moment
-    # Because the YMD is naturally symmetric, averaging only the positive half gives the 
-    # exact same magnitude as an absolute average, but entirely avoids the abs() operation.
-    pos_mz_mask = Mz_flat > 0
-    if np.any(pos_mz_mask):
-        kpis['Average Positive Yaw Moment'] = np.mean(Mz_flat[pos_mz_mask])
-    else:
-        kpis['Average Positive Yaw Moment'] = 0.0
 
     return kpis
 
@@ -455,7 +431,7 @@ def generate_ymd(params, velocity_override=None):
     # Tire Force Scaling
     force_scale = params.get('tireData', {}).get('forceScale', 1.0)
     
-    print("Starting YMD Simulation Loop...")
+    #print("Starting YMD Simulation Loop...")
     
     
     for z in range(len(slip_ratio_range)):

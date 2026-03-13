@@ -78,7 +78,7 @@ def edit_params_for_sweep(params):
     sweepable_params.insert(0, "velocity") # Ensure velocity can also be swept
     
     # KPIs available for plotting
-    kpis = ["Grip", "Limit Balance", "Control", "Stability", "Average Lateral Acceleration", "Average Absolute Yaw Moment", "Average Yaw Moment (Ay > 0)", "Average Positive Yaw Moment"]
+    kpis = ["Grip Limit (Acceleration)", "Limit Balance (Yaw Moment)", "Control", "Stability"]
 
     # 1D Sweep Tab
     tab_1d = ttk.Frame(notebook, padding="10")
