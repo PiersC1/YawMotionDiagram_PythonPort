@@ -1,0 +1,20 @@
+pacejka_tire_model_coeff:
+  description: 43100_R20_10_PSI_0_deg
+  longitudinal:
+    pCx1: 1.584
+    pDx1: 2.3401
+    pDx2: -0.062
+    pEx1: -1.3904
+    pKx1: 30.4661
+    pKx3: 0.7365
+  lateral:
+    pCy1: 1.8
+    pDy1: 2.518
+    pDy2: -0.0721
+    pEy1: 1.1264
+    pKy1: 62.7906
+    pKy2: 2.0802
+  common:
+    Fz0: 500.0
+    lambda_mu_x: 1.0
+    lambda_mu_y: 1.0
