@@ -213,6 +213,19 @@ def edit_params_for_sweep(params):
         except Exception as e:
             messagebox.showerror("Error", f"Failed to parse 1D sweep param: {e}")
 
+    def on_run_1d_overlay():
+        try:
+            result_params[0] = update_base_dict()
+            sweep_config['type'] = '1d_overlay'
+            sweep_config['param1'] = param1_1d_var.get()
+            sweep_config['start1'] = float(start_1d_entry.get())
+            sweep_config['end1'] = float(end_1d_entry.get())
+            sweep_config['steps1'] = int(steps_1d_entry.get())
+            sweep_config['kpis'] = [k for k, v in kpi_1d_vars.items() if v.get()]
+            root.destroy()
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to parse 1D sweep param: {e}")
+
     def on_run_2d():
         try:
             result_params[0] = update_base_dict()
@@ -239,6 +252,7 @@ def edit_params_for_sweep(params):
     ttk.Button(button_frame, text="Cancel", command=on_cancel).pack(side=tk.RIGHT, padx=5)
     ttk.Button(button_frame, text="Run 2D Sweep", command=on_run_2d).pack(side=tk.RIGHT, padx=5)
     ttk.Button(button_frame, text="Run 1D Sweep", command=on_run_1d).pack(side=tk.RIGHT, padx=5)
+    ttk.Button(button_frame, text="Run 1D YMD Overlay", command=on_run_1d_overlay).pack(side=tk.RIGHT, padx=5)
     ttk.Button(button_frame, text="Run Base YMD", command=on_run_base).pack(side=tk.RIGHT, padx=5)
 
     root.update_idletasks()

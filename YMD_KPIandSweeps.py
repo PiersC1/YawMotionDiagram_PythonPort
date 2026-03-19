@@ -112,20 +112,12 @@ def generate_ymd(params, velocity_override=None):
     weight = params['mass']['dry_mass']['value'] + params['mass']['driver_mass']['value'] + params['mass']['fuel_mass']['value'] # Total Weight in lbs
     wheelbase = params['dimensions']['wheelbase']['value'] / 12 # Wheelbase (Len from axle to axle) of the car in feet
     
-    #print(f'Weight: {weight}')
-    #print(f'Wheelbase: {wheelbase}')
-    
     front_weight_dist = params['mass']['x_loc'] # / 100 # Percentage of weight on the front of the car as a decimal
     
     front_track_width = params['frontSuspension']['geom']['track_width']['value'] / 12 # conv to feet
     rear_track_width = params['rearSuspension']['geom']['track_width']['value'] / 12 # conv to feet
     
     cg_height = params['mass']['z_loc']['value'] / 12 # Center of gravity height in feet
-    
-    #print(f"Front Weigth Dist :{front_weight_dist}")
-    #print(f"Front TW :{front_track_width}")
-    #print(f"Front Weigth Dist :{rear_track_width}")
-    #print(f"Front Weigth Dist :{cg_height}")
     
     front_rollCenter_height = params['frontSuspension']['geom']['static_roll_center']['value'] / 12 # Height of front roll centre in feet
     rear_rollCenter_height = params['rearSuspension']['geom']['static_roll_center']['value'] / 12 # Height of rear roll centre in feet
@@ -134,12 +126,6 @@ def generate_ymd(params, velocity_override=None):
     
     front_toe = np.deg2rad(params['frontSuspension']['geom']['static_toe']['value']) # Front toe in radians
     rear_toe = np.deg2rad(params['rearSuspension']['geom']['static_toe']['value']) # Rear toe in radians
-    
-    #print(f"Front RC:{front_rollCenter_height}")
-    #print(f"rear rc :{rear_rollCenter_height}")
-    #print(f"ackermann:{ackermann}")
-    #print(f"front toe:{front_toe}")
-    #print(f"rear toe:{rear_toe}")
     
     tire_spring_rate = params['tire_params']['tire_stiffness']['value'] * 12 # Tire spring rate in lb/ft
     
@@ -151,44 +137,26 @@ def generate_ymd(params, velocity_override=None):
     
     CoP = params['aero_params']['CoP'] / 100 # Center of pressure as a percent of how far forward on the car it is in decimal
     
-    #print(f"Tire K:{tire_spring_rate}")
-    #print(f"Front Spring Stiff :{front_spring_stiffness}")
-    #print(f"rear Spring Stiff:{rear_spring_stiffness}")
-    #print(f"front arb stiff:{front_arb_stiffness}")
-    #print(f"rear  arb stiff:{rear_arb_stiffness}")
-    #print(f"COP:{CoP}")
-    
     ## Derived parameters
     
     # Mass Parameters
     front_weight = weight * front_weight_dist
     rear_weight = weight - front_weight
     
-    #print(f"Front weight: {front_weight}")
-    #print(f"Rear weight: {rear_weight}")
-    
     front_unsprung_mass = params['frontSuspension']['mass']['sprung_mass']['value'] # in lbs
     rear_unsprung_mass = params['rearSuspension']['mass']['sprung_mass']['value'] # in lbs
-    
-    #print(f"Front unsprung mass: {front_unsprung_mass}")
-    #print(f"Rear unsprung mass: {rear_unsprung_mass}")
     
     total_unsprung_mass = front_unsprung_mass + rear_unsprung_mass
     total_sprung_mass = weight - total_unsprung_mass
     front_sprung_mass = front_weight - front_unsprung_mass
     rear_sprung_mass = rear_weight - rear_unsprung_mass
     
-    #print(f"total unsprung: {total_unsprung_mass}, total spring = {total_sprung_mass}, front sprung = {front_sprung_mass}, rear sprung = {rear_sprung_mass}")
-    
     # Other dimensions
     front_to_CG = wheelbase * (1 - front_weight_dist) # distance from the front axle to the center of gravity
     rear_to_CG = wheelbase * front_weight_dist
     
-    #print(f"Front to CG = {front_to_CG}, rear to cg = {rear_to_CG}")
-    
     Izz = (weight / GRAVITY) * ((front_to_CG + rear_to_CG)**2 + front_track_width**2) # Moment of inertia [lb-ft^2]
     
-    #print(f"Moment of inertia = {Izz}")
     
     # CG / Roll Center / Ride Heights
     unsprung_cg_height = params['frontSuspension']['mass']['cg_height']['value'] / 12 # CG height of unsprung mass [ft]
@@ -196,20 +164,14 @@ def generate_ymd(params, velocity_override=None):
     sprung_cg_height = (cg_height * weight - unsprung_cg_height * total_unsprung_mass) / total_sprung_mass # CG height of sprung mass [ft]
     #print(f"spung cg = {sprung_cg_height}")
     roll_axis_height = cg_height - (front_rollCenter_height + (rear_rollCenter_height - front_rollCenter_height) * front_to_CG / wheelbase) # CG height above roll axis [ft]
-    #print(f"roll axis height = {roll_axis_height}")
     # Assume x-position of sprung mass CG is the same as total CG
     sprung_cg_x = front_to_CG # x-position of sprung mass CG [ft]
     
     roll_axis_angle = np.arctan((rear_rollCenter_height - front_rollCenter_height) / wheelbase) # Inclination angle of roll axis [rad]
-    #print(f"roll axis angle = {roll_axis_angle}")
     roll_axis_offset = (sprung_cg_height - (front_rollCenter_height + (rear_rollCenter_height - front_rollCenter_height) * sprung_cg_x / wheelbase)) * np.cos(roll_axis_angle) # Distance between sprung mass CG and roll axis (orthogonal) [ft]
-    #print(f"roll axis offset = {roll_axis_offset}")
-    #print("CONFIRMED ACCURATE TO HERE=====================================================")
     # Assume the heights of front and rear unsprung masses are the same as the total unsprung mass
     front_unsprung_cg_height = unsprung_cg_height # CG height of front unsprung mass [ft]
     rear_unsprung_cg_height = unsprung_cg_height # CG height of rear unsprung mass [ft]
-    #print(f"front unsprung cg height = {front_unsprung_cg_height}")
-    #print(f"rear unsprung cg height = {rear_unsprung_cg_height}")
     
     ## Suspension
     # Motion ratios
@@ -217,10 +179,6 @@ def generate_ymd(params, velocity_override=None):
     rear_spring_MR = params['rearSuspension']['kinematics']['spring_MR'] # Rear spring motion ratio [wheel/spring]
     front_arb_MR = params['frontSuspension']['kinematics']['arb_MR'] # Front ARB motion ratio [wheel/spring]
     rear_arb_MR = params['rearSuspension']['kinematics']['arb_MR'] # Rear ARB motion ratio [wheel/spring]
-    #print(f"front spring MR = {front_spring_MR}")
-    #print(f"rear spring MR = {rear_arb_MR}")
-    #print(f"front arb MR = {front_arb_MR}")
-    #print(f"rear arb MR = {rear_arb_MR}")
     
     ## Aero
     # Frontal area [ft^2]
@@ -259,44 +217,24 @@ def generate_ymd(params, velocity_override=None):
     front_roll_rate = front_track_width**2 * front_ride_rate / 2 # Front roll rate [lbf*ft/rad]
     front_sprung_roll_rate = front_roll_rate - (wheelbase - sprung_cg_x) * total_sprung_mass * roll_axis_offset / wheelbase # Front roll rate of sprung mass [lbf*ft/rad]
     
-    #print(f"okfront arb wheel rate = {front_arb_wheel_rate}")
-    #print(f"okfront wheel rate = {front_wheel_rate}")
-    #print(f"okfront ride rate = {front_ride_rate}")
-    #print(f"okfront roll rate = {front_roll_rate}")
-    #print(f"okfront spring roll rate = {front_sprung_roll_rate}")
-    
     # Rear
     rear_arb_wheel_rate = 2 * rear_arb_stiffness * rear_arb_MR**2 # Rear wheel rate contributed by ARB [lbf/ft]
     rear_wheel_rate = rear_spring_stiffness * rear_spring_MR**2 + rear_arb_wheel_rate # Rear wheel rate [lbf/ft]
     rear_ride_rate = (rear_wheel_rate * tire_spring_rate) / (rear_wheel_rate + tire_spring_rate) # Rear ride rate [lbf/ft]
     rear_roll_rate = rear_track_width**2 * rear_ride_rate / 2 # Rear roll rate [lbf*ft/rad]
     rear_sprung_roll_rate = rear_roll_rate - sprung_cg_x * total_sprung_mass * roll_axis_offset / wheelbase # Rear roll rate of sprung mass [lbf*ft/rad]
-    #print(f"rear_arb wheel rate = {rear_arb_wheel_rate}")
-    #print(f"rear wheel rate = {rear_wheel_rate}")
-    #print(f"rear ride rate = {rear_ride_rate}")
-    #print(f"rear roll rate = {rear_roll_rate}")
-    #print(f"rear sprung roll rate = {rear_sprung_roll_rate}")
-    
     
     total_roll_rate = front_roll_rate + rear_roll_rate # Total roll rate [lbf*ft/rad]
     roll_gradient = np.rad2deg(-total_sprung_mass * roll_axis_offset / (total_roll_rate - total_sprung_mass * roll_axis_offset)) # Current roll gradient [deg/g]
-    #p(total_roll_rate)
-    #p(roll_gradient)
+
     front_lat_load_transfer_sens = total_sprung_mass * (roll_axis_offset * front_sprung_roll_rate / (total_roll_rate - total_sprung_mass * roll_axis_offset) + (wheelbase - sprung_cg_x) * front_rollCenter_height / wheelbase) / front_track_width + front_unsprung_mass * front_unsprung_cg_height / front_track_width # Front lateral load transfer per g [lbf/g]
-    #p(front_lat_load_transfer_sens)
     rear_lat_load_transfer_sens = total_sprung_mass * (roll_axis_offset * rear_sprung_roll_rate / (total_roll_rate - total_sprung_mass * roll_axis_offset) + sprung_cg_x * rear_rollCenter_height / wheelbase) / rear_track_width + rear_unsprung_mass * rear_unsprung_cg_height / rear_track_width # Rear lateral load transfer per g [lbf/g]
-    #p(rear_lat_load_transfer_sens)
     TLLTD = front_lat_load_transfer_sens / (front_lat_load_transfer_sens + rear_lat_load_transfer_sens) # Total Lateral Load Transfer Distribution
-    #p(TLLTD)
+    
     # Find maximum lateral acceleration [G]
     max_lat_accel_front = front_static_tire_load / front_lat_load_transfer_sens
     max_lat_accel_rear = rear_static_tire_load / rear_lat_load_transfer_sens
     max_lat_accel = min(max_lat_accel_front, max_lat_accel_rear) - 1e-6
-    #p(max_lat_accel_front)
-    #p(max_lat_accel_rear)
-    #p(max_lat_accel)
-    
-    
     
     ## Yaw Moment Diagram Loop Initialization
     
@@ -348,9 +286,6 @@ def generate_ymd(params, velocity_override=None):
     for i in range(Delta_len):
         curr_angle = steering_angle_range[i] # Rad
         front_left_steer_deltas[i], front_right_steer_deltas[i] = ack_sol.solve_ackermann(ackermann, curr_angle, front_track_width, wheelbase)
-    
-    
-    
     
     import scipy.io
     import os
@@ -605,7 +540,7 @@ def generate_ymd(params, velocity_override=None):
     return AyData, MData, slip_angle_range, steering_angle_range, slip_ratio_range
 
 
-def plot_ymd(AyData, MData, SA_range, Delta_range, SX_range):
+def plot_ymd(AyData, MData, SA_range, Delta_range, SX_range, save_path=None):
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111)
     SA_len = len(SA_range)
@@ -635,7 +570,87 @@ def plot_ymd(AyData, MData, SA_range, Delta_range, SX_range):
     custom_lines = [Line2D([0], [0], color='r', lw=2),
                     Line2D([0], [0], color='b', lw=2)]
     ax.legend(custom_lines, ['Constant Steering', 'Constant Beta'])
-    plt.show()
+    if save_path:
+        plt.savefig(save_path)
+        plt.close(fig)
+    else:
+        plt.show()
+
+def plot_ymd_overlay(overlay_data, param_name, save_path=None):
+    from matplotlib.lines import Line2D
+    import matplotlib as mpl
+    import matplotlib.colors as mcolors
+    
+    fig = plt.figure(figsize=(12, 10))
+    ax = fig.add_subplot(111)
+    
+    cmap = mpl.colormaps['viridis'] if hasattr(mpl, 'colormaps') else mpl.cm.get_cmap('viridis')
+    norm = mcolors.Normalize(vmin=0, vmax=max(1, len(overlay_data)-1))
+    
+    custom_lines = []
+    legend_labels = []
+    
+    limit_ay_points = []
+    limit_mz_points = []
+    
+    for idx, data_tuple in enumerate(overlay_data):
+        val, AyData, MData, SA_range, Delta_range, SX_range = data_tuple
+        SA_len = len(SA_range)
+        Delta_len = len(Delta_range)
+        SX_len = len(SX_range)
+        
+        color = cmap(norm(idx))
+        
+        # Extract Limit Balance point: max Ay point
+        Ay_flat = AyData[:, :, 0]
+        Mz_flat = MData[:, :, 0]
+        idx_max_ay = np.unravel_index(np.argmax(Ay_flat), Ay_flat.shape)
+        limit_ay = Ay_flat[idx_max_ay]
+        limit_mz = Mz_flat[idx_max_ay]
+        
+        limit_ay_points.append(limit_ay)
+        limit_mz_points.append(limit_mz)
+        
+        # Plot constant steering lines
+        for y in range(Delta_len):
+            for z in range(SX_len):
+                Ay_SALine = AyData[:, y, z]
+                M_SALine = MData[:, y, z] 
+                ax.plot(Ay_SALine, M_SALine, color=color, linewidth=0.5, alpha=0.7)
+
+        # Plot constant beta lines
+        for x in range(SA_len):
+            for z in range(SX_len):
+                Ay_deltaLine = AyData[x, :, z]
+                M_deltaLine = MData[x, :, z] 
+                ax.plot(Ay_deltaLine, M_deltaLine, color=color, linewidth=0.5, alpha=0.7)
+                
+        # Plot marker at limit balance
+        ax.plot(limit_ay, limit_mz, marker='o', color=color, markersize=5)
+                
+        custom_lines.append(Line2D([0], [0], color=color, lw=2))
+        legend_labels.append(f"{param_name} = {val:.4g}")
+
+    # Plot line connecting limit balances
+    if len(overlay_data) > 1:
+        ax.plot(limit_ay_points, limit_mz_points, color='red', linestyle='-', linewidth=2)
+        custom_lines.append(Line2D([0], [0], color='red', linestyle='-', lw=2))
+        legend_labels.append('Limit Balance Path')
+
+    ax.set_xlabel('Lateral Acceleration [G]')
+    ax.set_ylabel('Yaw Moment [lb*ft]')
+    ax.set_title(f'Yaw Moment Diagram Overlay - Sweeping {param_name}')
+    ax.grid(True)
+    ax.axhline(0, color='black', linewidth=1)
+    ax.axvline(0, color='black', linewidth=1)
+    ax.legend(custom_lines, legend_labels, loc='center left', bbox_to_anchor=(1.05, 0.5))
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, bbox_inches='tight')
+        plt.close(fig)
+    else:
+        plt.show()
 
 if __name__ == "__main__":
     with open('base_params.yaml', 'r') as f:
@@ -652,10 +667,25 @@ if __name__ == "__main__":
         # Run base YMD once
         Ay, Mz, SA_r, Delta_r, SX_r = generate_ymd(params)
         kpis = extract_kpis(Ay, Mz, SA_r, Delta_r)
+        
+        import os
+        from datetime import datetime
+        folder_name = f"Results_YMD_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        os.makedirs(folder_name, exist_ok=True)
+        
+        with open(f"{folder_name}/ymd_config.yaml", "w") as f:
+            yaml.dump({'base_params': params}, f)
+            
+        kpi_dict = {k: float(v) for k, v in kpis.items()}
+        with open(f"{folder_name}/kpis.yaml", "w") as f:
+            yaml.dump({'kpis': kpi_dict}, f)
+            
         print("======== BASE KPIs ========")
         for k, v in kpis.items():
             print(f"{k}: {v:.4f}")
-        plot_ymd(Ay, Mz, SA_r, Delta_r, SX_r)
+            
+        plot_ymd(Ay, Mz, SA_r, Delta_r, SX_r, save_path=f"{folder_name}/YMD_Plot.png")
+        print(f"Base YMD complete. Results saved in {folder_name}/")
         
     elif sweep_config['type'] == '1d':
         param1 = sweep_config['param1']
@@ -700,6 +730,57 @@ if __name__ == "__main__":
             plt.close()
             
         print(f"Sweep 1D complete. Results saved in {folder_name}/")
+
+    elif sweep_config['type'] == '1d_overlay':
+        param1 = sweep_config['param1']
+        start = sweep_config['start1']
+        end = sweep_config['end1']
+        steps = sweep_config['steps1']
+        kpi_list = sweep_config['kpis']
+        
+        sweep_vals = np.linspace(start, end, steps)
+        
+        import os
+        from datetime import datetime
+        folder_name = f"Results_YMD_Overlay_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        os.makedirs(folder_name, exist_ok=True)
+        
+        with open(f"{folder_name}/sweep_config.yaml", "w") as f:
+            yaml.dump({'base_params': params, 'sweep_settings': sweep_config}, f)
+        
+        results = {kpi: [] for kpi in kpi_list}
+        overlay_data = []
+        
+        for val in sweep_vals:
+            p_copy = copy.deepcopy(params)
+            if param1 == 'velocity':
+                Ay, Mz, SA_r, Delta_r, SX_r = generate_ymd(p_copy, velocity_override=val)
+            else:
+                set_nested_val(p_copy, param1, val)
+                Ay, Mz, SA_r, Delta_r, SX_r = generate_ymd(p_copy)
+            
+            kpis = extract_kpis(Ay, Mz, SA_r, Delta_r)
+            for k in kpi_list:
+                results[k].append(float(kpis[k]))
+                
+            overlay_data.append((val, Ay, Mz, SA_r, Delta_r, SX_r))
+            
+        with open(f"{folder_name}/kpi_results.yaml", "w") as f:
+            yaml.dump({'sweep_values': sweep_vals.tolist(), 'kpi_results': results}, f)
+            
+        plot_ymd_overlay(overlay_data, param1, save_path=f"{folder_name}/YMD_Overlay_Plot.png")
+            
+        for kpi in kpi_list:
+            plt.figure(figsize=(8, 6))
+            plt.plot(sweep_vals, results[kpi], marker='o')
+            plt.xlabel(param1)
+            plt.ylabel(kpi)
+            plt.title(f"{kpi} vs {param1}")
+            plt.grid(True)
+            plt.savefig(f"{folder_name}/{kpi.replace(' ', '_')}_vs_{param1.replace('.', '_')}.png")
+            plt.close()
+            
+        print(f"Overlay YMD complete. Results saved in {folder_name}/")
 
     elif sweep_config['type'] == '2d':
         param1 = sweep_config['param1']
