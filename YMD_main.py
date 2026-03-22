@@ -3,7 +3,7 @@ import numpy as np
 import param_gui
 import ackermann_solver as ack_sol
 
-with open('base_params.yaml', 'r') as f:
+with open('base_params_SCR26.yaml', 'r') as f:
     params = yaml.safe_load(f)
 
 # Open GUI to edit parameters

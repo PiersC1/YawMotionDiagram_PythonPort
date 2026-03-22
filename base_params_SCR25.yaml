@@ -63,7 +63,7 @@ frontSuspension:
       value: 250
       unit: 'lb/in'
     arb_stiffness:
-      value: 350
+      value: 0
       unit: 'lb/in'
 
   geom:

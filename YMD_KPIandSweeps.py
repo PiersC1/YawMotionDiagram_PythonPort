@@ -653,7 +653,7 @@ def plot_ymd_overlay(overlay_data, param_name, save_path=None):
         plt.show()
 
 if __name__ == "__main__":
-    with open('base_params.yaml', 'r') as f:
+    with open('base_params_SCR26.yaml', 'r') as f:
         params = yaml.safe_load(f)
 
     # Open GUI to edit parameters

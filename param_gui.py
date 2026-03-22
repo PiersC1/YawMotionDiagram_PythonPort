@@ -95,7 +95,7 @@ def edit_params(params):
             create_widgets(tab_frame, value, (key,))
         else:
             # For top-level non-dict items, put them in a "General" tab
-            # But currently base_params.yaml has all dicts at top level except maybe if user changed it
+            # But currently base_params_SCR26.yaml has all dicts at top level except maybe if user changed it
             pass
 
     # Buttons - Pack at BOTTOM first to ensure visibility
@@ -155,6 +155,6 @@ def edit_params(params):
 if __name__ == "__main__":
     # Test with dummy data
     import yaml
-    with open('base_params.yaml', 'r') as f:
+    with open('base_params_SCR26.yaml', 'r') as f:
         p = yaml.safe_load(f)
     print(edit_params(p))
